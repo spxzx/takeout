@@ -66,8 +66,6 @@ public class EmployeeController {
     public R<String> updateEmployee(HttpServletRequest req, @RequestBody Employee employee) {
         log.info(employee.toString());
         Long employeeId = (Long) req.getSession().getAttribute("employee");
-        employee.setUpdateTime(LocalDateTime.now());
-        employee.setUpdateUser(employeeId);
         boolean status = employeeService.updateById(employee);
         return status ? R.success("编辑员工信息/状态成功!") : R.error("编辑员工信息/状态失败!");
     }
@@ -88,11 +86,7 @@ public class EmployeeController {
 
         employee.setPassword(DigestUtils.md5DigestAsHex("123456".getBytes()));
         employee.setStatus(1);
-        employee.setCreateTime(LocalDateTime.now());
-        employee.setUpdateTime(LocalDateTime.now());
         HttpSession session = req.getSession();
-        employee.setUpdateUser((Long) session.getAttribute("employee"));
-        employee.setCreateUser((Long) session.getAttribute("employee"));
         boolean saveStatus = employeeService.save(employee);
         return saveStatus ? R.success("添加用户成功!") : R.error("添加用户失败,请稍后再试!");
     }

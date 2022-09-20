@@ -1,6 +1,7 @@
 package com.teamwork.takeout.filter;
 
 import com.alibaba.fastjson.JSON;
+import com.teamwork.takeout.common.BaseContext;
 import com.teamwork.takeout.common.R;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.AntPathMatcher;
@@ -49,11 +50,11 @@ public class LoginCheckFilter implements Filter {
             return ;
         }
 
-        HttpSession session = req.getSession();
-        Object employee = session.getAttribute("employee");
+        Long employeeId = (Long) req.getSession().getAttribute("employee");
 
-        if (employee != null) {
-            log.info("用户已登录,可放行...");
+        if (employeeId != null) {
+            log.info("用户已登录, ID为 {}, 可放行...", employeeId);
+            BaseContext.setCurrentId(employeeId);
             filterChain.doFilter(servletRequest, servletResponse);
             return ;
         }
