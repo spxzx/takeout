@@ -18,7 +18,7 @@ public class Dish implements Serializable {
     private Long categoryId;
     private BigDecimal price;
     private String code;
-    private String img;
+    private String image;
     private String description;
     private Integer status;
     private Integer sort;
@@ -35,6 +35,6 @@ public class Dish implements Serializable {
     @TableField(fill = FieldFill.INSERT_UPDATE)
     private Long updateUser;
 
-//    private Integer isDelete;
+//    private Integer isDeleted;
 
 }

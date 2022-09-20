@@ -26,11 +26,7 @@ public class CommonController {
     public R<String> upload(MultipartFile file) {
         String originalFilename = file.getOriginalFilename();
         String suffix = originalFilename.substring(originalFilename.lastIndexOf("."));
-        String fileName = UUID.randomUUID().toString() + suffix;
-        File dir = new File(basePath);
-        if (!dir.exists()) {
-            dir.mkdirs();
-        }
+        String fileName = UUID.randomUUID() + suffix;
         try {
             file.transferTo(new File(basePath + fileName));
         } catch (IOException e) {
