@@ -63,14 +63,13 @@ public class EmployeeController {
     }
 
     @PutMapping
-    public R<String> banOrEnable(HttpServletRequest req, @RequestBody Employee employee) {
-        Object employeeId = req.getSession().getAttribute("employee");
+    public R<String> updateEmployee(HttpServletRequest req, @RequestBody Employee employee) {
+        log.info(employee.toString());
+        Long employeeId = (Long) req.getSession().getAttribute("employee");
         employee.setUpdateTime(LocalDateTime.now());
-        if (employeeId != null) {
-            employee.setUpdateUser((Long) employeeId);
-        }
+        employee.setUpdateUser(employeeId);
         boolean status = employeeService.updateById(employee);
-        return status ? R.success("操作成功!") : R.error("操作失败!");
+        return status ? R.success("编辑员工信息/状态成功!") : R.error("编辑员工信息/状态失败!");
     }
 
     @PostMapping
@@ -98,6 +97,14 @@ public class EmployeeController {
         return saveStatus ? R.success("添加用户成功!") : R.error("添加用户失败,请稍后再试!");
     }
 
-
+    @GetMapping("/{id}")
+    public R<Employee> getEmployeeById(@PathVariable Long id) {
+        log.info("根据id查询员工信息...");
+        Employee employee = employeeService.getById(id);
+        if (employee != null) {
+            return R.success(employee);
+        }
+        return R.error("没有查询到对应员工信息");
+    }
 
 }
