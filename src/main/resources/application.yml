@@ -16,3 +16,6 @@ mybatis-plus:
   global-config:
     db-config:
       id-type: ASSIGN_ID
+
+takeout:
+  path: D:\Environment\Java\Code\TakeOut\src\main\resources\images\
