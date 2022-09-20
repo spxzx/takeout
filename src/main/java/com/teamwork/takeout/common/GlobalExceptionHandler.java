@@ -39,4 +39,10 @@ public class GlobalExceptionHandler {
         return R.error("服务器正忙,请稍后...");
     }
 
+    @ExceptionHandler(CustomException.class)
+    public R<String> exceptionHandler(CustomException ex) {
+        log.error(ex.getMessage());
+        return R.error(ex.getMessage());
+    }
+
 }

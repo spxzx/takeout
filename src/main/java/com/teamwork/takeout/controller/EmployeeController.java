@@ -19,10 +19,8 @@ import java.time.LocalDateTime;
 @RestController
 @RequestMapping("/employee")
 public class EmployeeController {
-
     @Autowired
     private EmployeeService employeeService;
-
     @PostMapping("/login")
     public R<Employee> login(HttpServletRequest req, @RequestBody Employee employee) {
         String pwd = employee.getPassword();
@@ -44,16 +42,13 @@ public class EmployeeController {
         req.getSession().setAttribute("employee", re.getId());
         return R.success(re);
     }
-
     @PostMapping("/logout")
     public R<String> logout(HttpServletRequest req) {
         req.getSession().removeAttribute("employee");
         return R.success("退出成功...");
     }
-
     @GetMapping("/page")
     public R<Page<Employee>> page(Integer page, Integer pageSize, String name) {
-        log.info("Current Page: {}, Page Size: {}, Search Term: {}", page, pageSize, name);
         Page<Employee> employeePage = new Page<>(page, pageSize);
         QueryWrapper<Employee> wrapper = new QueryWrapper<>();
         wrapper.like(name!=null,"name",name);
@@ -61,39 +56,28 @@ public class EmployeeController {
         employeeService.page(employeePage, wrapper);
         return R.success(employeePage);
     }
-
     @PutMapping
-    public R<String> updateEmployee(HttpServletRequest req, @RequestBody Employee employee) {
-        log.info(employee.toString());
-        Long employeeId = (Long) req.getSession().getAttribute("employee");
-        boolean status = employeeService.updateById(employee);
-        return status ? R.success("编辑员工信息/状态成功!") : R.error("编辑员工信息/状态失败!");
+    public R<String> updateEmployee(@RequestBody Employee employee) {
+        return employeeService.updateById(employee) ?
+                R.success("编辑员工信息/状态成功!") : R.error("编辑员工信息/状态失败!");
     }
-
     @PostMapping
-    public R<String> save(HttpServletRequest req, @RequestBody Employee employee) {
-        log.info("用户基本信息: {}", employee.toString());
-
+    public R<String> save(@RequestBody Employee employee) {
         String username = employee.getUsername();
         QueryWrapper<Employee> wrapper = new QueryWrapper<>();
         // eq 等于  条件:employee.getUsername() != null
         //         列:username  查找值:username = employee.getUsername()
         wrapper.eq(username!=null,"username",username);
-        Employee one = employeeService.getOne(wrapper);
-        if (one != null) {
-            return R.error("添加用户失败,用户名: " + username + "已存在");
+        if (employeeService.getOne(wrapper) != null) {
+            return R.error("添加用户失败, 用户名: " + username + "已存在!");
         }
-
         employee.setPassword(DigestUtils.md5DigestAsHex("123456".getBytes()));
         employee.setStatus(1);
-        HttpSession session = req.getSession();
-        boolean saveStatus = employeeService.save(employee);
-        return saveStatus ? R.success("添加用户成功!") : R.error("添加用户失败,请稍后再试!");
+        return employeeService.save(employee) ?
+                R.success("添加用户成功!") : R.error("添加用户失败,请稍后再试!");
     }
-
     @GetMapping("/{id}")
     public R<Employee> getEmployeeById(@PathVariable Long id) {
-        log.info("根据id查询员工信息...");
         Employee employee = employeeService.getById(id);
         if (employee != null) {
             return R.success(employee);
