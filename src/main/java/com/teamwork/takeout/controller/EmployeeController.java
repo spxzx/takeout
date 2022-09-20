@@ -24,6 +24,8 @@ public class EmployeeController {
         String pwd = employee.getPassword();
         pwd = DigestUtils.md5DigestAsHex(pwd.getBytes());
         LambdaQueryWrapper<Employee> queryWrapper = new LambdaQueryWrapper<>();
+        // Employee::getUsername 实例化y一个Employee对象 调用Employee对象的getUsername方法
+        // eq 为 = 即将 Username 的参数值为 employee.getUsername() [使用的是get方法而不是set方法]
         queryWrapper.eq(Employee::getUsername,employee.getUsername());
         Employee re = employeeService.getOne(queryWrapper);
         if (re == null) {
