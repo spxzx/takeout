@@ -2,6 +2,7 @@ package com.teamwork.takeout.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.teamwork.takeout.common.R;
 import com.teamwork.takeout.entity.Employee;
 import com.teamwork.takeout.service.EmployeeService;
@@ -50,6 +51,28 @@ public class EmployeeController {
         return R.success("退出成功...");
     }
 
+    @GetMapping("/page")
+    public R<Page<Employee>> page(Integer page, Integer pageSize, String name) {
+        log.info("Current Page: {}, Page Size: {}, Search Term: {}", page, pageSize, name);
+        Page<Employee> employeePage = new Page<>(page, pageSize);
+        QueryWrapper<Employee> wrapper = new QueryWrapper<>();
+        wrapper.like(name!=null,"name",name);
+        wrapper.orderByDesc("update_time");
+        employeeService.page(employeePage, wrapper);
+        return R.success(employeePage);
+    }
+
+    @PutMapping
+    public R<String> banOrEnable(HttpServletRequest req, @RequestBody Employee employee) {
+        Object employeeId = req.getSession().getAttribute("employee");
+        employee.setUpdateTime(LocalDateTime.now());
+        if (employeeId != null) {
+            employee.setUpdateUser((Long) employeeId);
+        }
+        boolean status = employeeService.updateById(employee);
+        return status ? R.success("操作成功!") : R.error("操作失败!");
+    }
+
     @PostMapping
     public R<String> save(HttpServletRequest req, @RequestBody Employee employee) {
         log.info("用户基本信息: {}", employee.toString());
@@ -74,5 +97,7 @@ public class EmployeeController {
         boolean saveStatus = employeeService.save(employee);
         return saveStatus ? R.success("添加用户成功!") : R.error("添加用户失败,请稍后再试!");
     }
+
+
 
 }
