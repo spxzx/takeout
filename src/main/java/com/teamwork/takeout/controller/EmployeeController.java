@@ -1,6 +1,7 @@
 package com.teamwork.takeout.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.teamwork.takeout.common.R;
 import com.teamwork.takeout.entity.Employee;
 import com.teamwork.takeout.service.EmployeeService;
@@ -10,6 +11,8 @@ import org.springframework.util.DigestUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+import java.time.LocalDateTime;
 
 @Slf4j
 @RestController
@@ -20,7 +23,7 @@ public class EmployeeController {
     private EmployeeService employeeService;
 
     @PostMapping("/login")
-    public R<Employee> login(HttpServletRequest request, @RequestBody Employee employee) {
+    public R<Employee> login(HttpServletRequest req, @RequestBody Employee employee) {
         String pwd = employee.getPassword();
         pwd = DigestUtils.md5DigestAsHex(pwd.getBytes());
         LambdaQueryWrapper<Employee> queryWrapper = new LambdaQueryWrapper<>();
@@ -37,14 +40,39 @@ public class EmployeeController {
         if (re.getStatus() == 0) {
             return R.error("账号已被封禁...");
         }
-        request.getSession().setAttribute("employee", re.getId());
+        req.getSession().setAttribute("employee", re.getId());
         return R.success(re);
     }
 
     @PostMapping("/logout")
-    public R<String> logout(HttpServletRequest request) {
-        request.getSession().removeAttribute("employee");
+    public R<String> logout(HttpServletRequest req) {
+        req.getSession().removeAttribute("employee");
         return R.success("退出成功...");
+    }
+
+    @PostMapping
+    public R<String> save(HttpServletRequest req, @RequestBody Employee employee) {
+        log.info("用户基本信息: {}", employee.toString());
+
+        String username = employee.getUsername();
+        QueryWrapper<Employee> wrapper = new QueryWrapper<>();
+        // eq 等于  条件:employee.getUsername() != null
+        //         列:username  查找值:username = employee.getUsername()
+        wrapper.eq(username!=null,"username",username);
+        Employee one = employeeService.getOne(wrapper);
+        if (one != null) {
+            return R.error("添加用户失败,用户名: " + username + "已存在");
+        }
+
+        employee.setPassword(DigestUtils.md5DigestAsHex("123456".getBytes()));
+        employee.setStatus(1);
+        employee.setCreateTime(LocalDateTime.now());
+        employee.setUpdateTime(LocalDateTime.now());
+        HttpSession session = req.getSession();
+        employee.setUpdateUser((Long) session.getAttribute("employee"));
+        employee.setCreateUser((Long) session.getAttribute("employee"));
+        boolean saveStatus = employeeService.save(employee);
+        return saveStatus ? R.success("添加用户成功!") : R.error("添加用户失败,请稍后再试!");
     }
 
 }
