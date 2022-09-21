@@ -42,10 +42,18 @@ public class DishController {
         dishService.page(dishPage, wrapper);
         // 对象拷贝                    records 结果列表
         BeanUtils.copyProperties(dishPage, dishDtoPage, "records");
-        List<Dish> records = dishPage.getRecords();
-        List<DishDto> list = records.stream().map((item)->{
+        List<DishDto> list = dishPage.getRecords().stream().map((item)->{
             DishDto dishDto = new DishDto();
             dishSet(item, dishDto);
+            /*
+            * BeanUtils.copyProperties(item, dishDto);
+            * Long categoryId = item.getCategoryId();
+            * Category category = categoryService.getById(categoryId);
+            * if (category != null) {
+            *    String categoryName = category.getName();
+            *    dishDto.setCategoryName(categoryName);
+            * }
+            */
             return dishDto;
         }).collect(Collectors.toList());
         dishDtoPage.setRecords(list);
