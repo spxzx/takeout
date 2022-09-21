@@ -4,23 +4,28 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.teamwork.takeout.common.R;
+import com.teamwork.takeout.dto.DishDto;
 import com.teamwork.takeout.dto.SetmealDto;
+import com.teamwork.takeout.entity.Dish;
 import com.teamwork.takeout.entity.Setmeal;
-import com.teamwork.takeout.entity.SetmealDish;
+import com.teamwork.takeout.service.DishService;
 import com.teamwork.takeout.service.SetmealDishService;
 import com.teamwork.takeout.service.SetmealService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.yaml.snakeyaml.events.Event;
 
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
 @RequestMapping("/setmeal")
 public class SetmealController {
+
+    @Autowired
+    private DishService dishService;
 
     @Autowired
     private SetmealService setmealService;
@@ -82,6 +87,21 @@ public class SetmealController {
                 stream().peek((item)->item.setStatus(1)).collect(Collectors.toList());
         return setmealService.updateBatchById(setmeals) ?
                 R.success("套餐状态修改成功！") : R.error("套餐状态修改失败，请稍后尝试！");
+    }
+
+    @GetMapping("/list")
+    public R<List<Setmeal>> list(Setmeal setmeal) {
+        LambdaQueryWrapper<Setmeal> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(setmeal!=null,Setmeal::getCategoryId,setmeal.getCategoryId());
+        queryWrapper.eq(setmeal.getStatus()!=null,Setmeal::getStatus,setmeal.getStatus());
+        queryWrapper.orderByDesc(Setmeal::getUpdateTime);
+        List<Setmeal> list = setmealService.list(queryWrapper);
+        return R.success(list);
+    }
+
+    @GetMapping("/dish/{id}")
+    public R<DishDto> getDishById(@PathVariable Long id){
+        return R.success(dishService.getByIdWithFlavor(id));
     }
 
 }

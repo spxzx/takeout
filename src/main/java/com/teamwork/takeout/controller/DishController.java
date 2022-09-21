@@ -7,6 +7,7 @@ import com.teamwork.takeout.common.R;
 import com.teamwork.takeout.dto.DishDto;
 import com.teamwork.takeout.entity.Category;
 import com.teamwork.takeout.entity.Dish;
+import com.teamwork.takeout.entity.DishFlavor;
 import com.teamwork.takeout.service.CategoryService;
 import com.teamwork.takeout.service.DishFlavorService;
 import com.teamwork.takeout.service.DishService;
@@ -44,13 +45,7 @@ public class DishController {
         List<Dish> records = dishPage.getRecords();
         List<DishDto> list = records.stream().map((item)->{
             DishDto dishDto = new DishDto();
-            BeanUtils.copyProperties(item, dishDto);
-            Long categoryId = item.getCategoryId();
-            Category category = categoryService.getById(categoryId);
-            if (category != null) {
-                String categoryName = category.getName();
-                dishDto.setCategoryName(categoryName);
-            }
+            dishSet(item, dishDto);
             return dishDto;
         }).collect(Collectors.toList());
         dishDtoPage.setRecords(list);
@@ -102,12 +97,33 @@ public class DishController {
     }
 
     @GetMapping("/list")
-    public R<List<Dish>> getDishList(Dish dish){
+    public R<List<DishDto>> list(Dish dish) {
         LambdaQueryWrapper<Dish> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Dish::getCategoryId, dish.getCategoryId());
+        queryWrapper.eq(dish.getCategoryId()!=null,Dish::getCategoryId,dish.getCategoryId());
         queryWrapper.eq(Dish::getStatus, 1);
-        queryWrapper.orderByDesc(Dish::getUpdateTime);
-        return R.success(dishService.list(queryWrapper));
+        queryWrapper.orderByAsc(Dish::getSort).orderByDesc(Dish::getUpdateTime);
+        List<Dish> dishes = dishService.list(queryWrapper);
+        List<DishDto> dishDtos = dishes.stream().map((item)->{
+            DishDto dishDto = new DishDto();
+            dishSet(item, dishDto);
+            Long dishId = item.getId();
+            LambdaQueryWrapper<DishFlavor> dishFlavorLambdaQueryWrapper = new LambdaQueryWrapper<>();
+            dishFlavorLambdaQueryWrapper.eq(DishFlavor::getDishId, dishId);
+            List<DishFlavor> flavors = dishFlavorService.list(dishFlavorLambdaQueryWrapper);
+            dishDto.setFlavors(flavors);
+            return dishDto;
+        }).collect(Collectors.toList());
+        return R.success(dishDtos);
+    }
+
+    private void dishSet(Dish item, DishDto dishDto) {
+        BeanUtils.copyProperties(item, dishDto);
+        Long categoryId = item.getCategoryId();
+        Category category = categoryService.getById(categoryId);
+        if (category != null) {
+            String categoryName = category.getName();
+            dishDto.setCategoryName(categoryName);
+        }
     }
 
 }
