@@ -1,5 +1,6 @@
 package com.teamwork.takeout.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.teamwork.takeout.common.R;
@@ -31,7 +32,7 @@ public class DishController {
     private DishFlavorService dishFlavorService;
 
     @GetMapping("/page")
-    public R<Page> page(Integer page, Integer pageSize, String name) {
+    public R<Page<DishDto>> page(Integer page, Integer pageSize, String name) {
         Page<Dish> dishPage = new Page<>(page, pageSize);
         Page<DishDto> dishDtoPage = new Page<>();
         QueryWrapper<Dish> wrapper = new QueryWrapper<>();
@@ -87,7 +88,8 @@ public class DishController {
 
     @PostMapping("/status/0")
     public R<String> updateDishStatusToStop(@RequestParam List<Long> ids) {
-        List<Dish> list = dishService.listByIds(ids).stream().peek((item)->item.setStatus(0)).collect(Collectors.toList());
+        List<Dish> list = dishService.listByIds(ids).
+                stream().peek((item)->item.setStatus(0)).collect(Collectors.toList());
         return dishService.updateBatchById(list) ?
                 R.success("菜品状态修改成功！") : R.error("菜品状态修改失败，请稍后重试！");
     }
@@ -97,6 +99,15 @@ public class DishController {
         List<Dish> list = dishService.listByIds(ids).stream().peek((item)->item.setStatus(1)).collect(Collectors.toList());
         return dishService.updateBatchById(list) ?
                 R.success("菜品状态修改成功！") : R.error("菜品状态修改失败，请稍后重试！");
+    }
+
+    @GetMapping("/list")
+    public R<List<Dish>> getDishList(Dish dish){
+        LambdaQueryWrapper<Dish> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Dish::getCategoryId, dish.getCategoryId());
+        queryWrapper.eq(Dish::getStatus, 1);
+        queryWrapper.orderByDesc(Dish::getUpdateTime);
+        return R.success(dishService.list(queryWrapper));
     }
 
 }

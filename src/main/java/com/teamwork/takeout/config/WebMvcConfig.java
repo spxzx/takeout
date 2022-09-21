@@ -1,6 +1,5 @@
 package com.teamwork.takeout.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.teamwork.takeout.common.JacksonObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Configuration;

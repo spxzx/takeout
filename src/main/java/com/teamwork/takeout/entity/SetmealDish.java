@@ -9,18 +9,16 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
-public class Dish implements Serializable {
+public class SetmealDish implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     private Long id;
+    private Long setmealId;
+    private Long dishId;
     private String name;
-    private Long categoryId;
     private BigDecimal price;
-    private String code;
-    private String image;
-    private String description;
-    private Integer status;
+    private Integer copies;
     private Integer sort;
 
     @TableField(fill = FieldFill.INSERT)

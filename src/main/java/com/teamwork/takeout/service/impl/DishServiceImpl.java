@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.function.BinaryOperator;
 import java.util.stream.Collectors;
 
 @Service
@@ -35,24 +36,25 @@ public class DishServiceImpl extends ServiceImpl<DishMapper, Dish> implements Di
 
     @Override
     public DishDto getByIdWithFlavor(Long id) {
-        Dish dish = this.getById(id);
         DishDto dishDto = new DishDto();
-        BeanUtils.copyProperties(dish, dishDto);
+        BeanUtils.copyProperties(this.getById(id), dishDto);
         LambdaQueryWrapper<DishFlavor> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(DishFlavor::getDishId,dish.getId());
+        queryWrapper.eq(DishFlavor::getDishId,id);
         List<DishFlavor> flavors = dishFlavorService.list(queryWrapper);
         dishDto.setFlavors(flavors);
         return dishDto;
     }
 
     @Override
+    @Transactional
     public boolean updateWithFlavor(DishDto dishDto) {
         this.updateById(dishDto);
         LambdaQueryWrapper<DishFlavor> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(DishFlavor::getDishId, dishDto.getId());
         dishFlavorService.remove(queryWrapper);
-        List<DishFlavor> flavors = dishDto.getFlavors();
-        flavors = flavors.stream().peek((item)-> item.setDishId(dishDto.getId())).collect(Collectors.toList());
+        List<DishFlavor> flavors = dishDto.getFlavors().
+                stream().peek((item)->
+                        item.setDishId(dishDto.getId())).collect(Collectors.toList());
         return dishFlavorService.saveBatch(flavors);
     }
 
@@ -65,11 +67,10 @@ public class DishServiceImpl extends ServiceImpl<DishMapper, Dish> implements Di
         if (this.count(dishLambdaQueryWrapper) > 0) {
             throw new CustomException("选择了正在出售中菜品，不能删除！");
         }
-        boolean dishFlag = this.removeByIds(ids);
+        this.removeByIds(ids);
         LambdaQueryWrapper<DishFlavor> dishFlavorLambdaQueryWrapper = new LambdaQueryWrapper<>();
         dishFlavorLambdaQueryWrapper.in(DishFlavor::getDishId, ids);
-        boolean dishFlavorFlag = dishFlavorService.remove(dishFlavorLambdaQueryWrapper);
-        return dishFlag && dishFlavorFlag;
+        return dishFlavorService.remove(dishFlavorLambdaQueryWrapper);
     }
 
 }
