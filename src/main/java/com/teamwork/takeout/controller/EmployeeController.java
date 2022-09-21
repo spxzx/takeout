@@ -12,8 +12,6 @@ import org.springframework.util.DigestUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
-import java.time.LocalDateTime;
 
 @Slf4j
 @RestController
@@ -51,7 +49,11 @@ public class EmployeeController {
     public R<Page<Employee>> page(Integer page, Integer pageSize, String name) {
         Page<Employee> employeePage = new Page<>(page, pageSize);
         QueryWrapper<Employee> wrapper = new QueryWrapper<>();
-        wrapper.like(name!=null,"name",name);
+        wrapper.like(name!=null,"name",name)
+                .or()
+                .like(name!=null,"username",name)
+                .or()
+                .like(name!=null,"phone",name);
         wrapper.orderByDesc("update_time");
         employeeService.page(employeePage, wrapper);
         return R.success(employeePage);

@@ -36,14 +36,14 @@ public class LoginCheckFilter implements Filter {
         HttpServletResponse resp = (HttpServletResponse) servletResponse;
 
         String reqURI = req.getRequestURI();
-        log.info("接收到的请求路径: {}", reqURI);
 
         String[] urls = new String[]{
                 "/employee/login",
                 "/employee/logout",
                 "/backend/**",
                 "/front/**",
-                "/common/**"
+                "/user/sendMsg",
+                "/user/login"
         };
 
         if (check(urls, reqURI)){
@@ -56,6 +56,15 @@ public class LoginCheckFilter implements Filter {
         if (employeeId != null) {
             log.info("用户已登录, ID为 {}, 可放行...", employeeId);
             BaseContext.setCurrentId(employeeId);
+            filterChain.doFilter(servletRequest, servletResponse);
+            return ;
+        }
+
+        Long userId = (Long) req.getSession().getAttribute("user");
+
+        if (userId != null) {
+            log.info("用户已登录, ID为 {}, 可放行...", userId);
+            BaseContext.setCurrentId(userId);
             filterChain.doFilter(servletRequest, servletResponse);
             return ;
         }
