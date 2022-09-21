@@ -11,6 +11,10 @@ public class OrderDto extends Orders {
 
     private List<OrderDetail> orderDetails;
 
+    private String userName;
+
+    private String address;
+
     private Integer sumNum;
 
 }

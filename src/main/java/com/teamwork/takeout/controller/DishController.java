@@ -45,15 +45,6 @@ public class DishController {
         List<DishDto> list = dishPage.getRecords().stream().map((item)->{
             DishDto dishDto = new DishDto();
             dishSet(item, dishDto);
-            /*
-            * BeanUtils.copyProperties(item, dishDto);
-            * Long categoryId = item.getCategoryId();
-            * Category category = categoryService.getById(categoryId);
-            * if (category != null) {
-            *    String categoryName = category.getName();
-            *    dishDto.setCategoryName(categoryName);
-            * }
-            */
             return dishDto;
         }).collect(Collectors.toList());
         dishDtoPage.setRecords(list);
