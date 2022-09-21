@@ -5,17 +5,21 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.teamwork.takeout.common.R;
 import com.teamwork.takeout.dto.DishDto;
+import com.teamwork.takeout.dto.SetmealDishDto;
 import com.teamwork.takeout.dto.SetmealDto;
 import com.teamwork.takeout.entity.Dish;
 import com.teamwork.takeout.entity.Setmeal;
+import com.teamwork.takeout.entity.SetmealDish;
 import com.teamwork.takeout.service.DishService;
 import com.teamwork.takeout.service.SetmealDishService;
 import com.teamwork.takeout.service.SetmealService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.yaml.snakeyaml.events.Event;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -100,8 +104,21 @@ public class SetmealController {
     }
 
     @GetMapping("/dish/{id}")
-    public R<DishDto> getDishById(@PathVariable Long id){
-        return R.success(dishService.getByIdWithFlavor(id));
+    public R<List<SetmealDishDto>> getDishById(@PathVariable Long id) {
+        LambdaQueryWrapper<SetmealDish> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(SetmealDish::getSetmealId, id);
+        List<SetmealDish> setmealDishes = setmealDishService.list(queryWrapper);
+        List<SetmealDishDto> setmealDishDtos = new ArrayList<SetmealDishDto>();
+        setmealDishes.forEach(setmealDish ->{
+            SetmealDishDto setmealDishDto = new SetmealDishDto();
+            BeanUtils.copyProperties(setmealDish, setmealDishDto);
+            Dish dish = dishService.getById(setmealDish.getDishId());
+            setmealDishDto.setImage(dish.getImage());
+            setmealDishDto.setDescription(dish.getDescription());
+            setmealDishDtos.add(setmealDishDto);
+        });
+        return R.success(setmealDishDtos);
     }
+
 
 }
