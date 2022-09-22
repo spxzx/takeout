@@ -8,18 +8,14 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @Data
-public class Employee implements Serializable {
+public class DishFlavor implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     private Long id;
-    private String username;
+    private Long dishId;
     private String name;
-    private String password;
-    private String phone;
-    private String sex;
-    private String idNumber;
-    private Integer status;
+    private String value;
 
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
@@ -32,4 +28,7 @@ public class Employee implements Serializable {
 
     @TableField(fill = FieldFill.INSERT_UPDATE)
     private Long updateUser;
+
+    private Integer isDeleted;
+
 }
